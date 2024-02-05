@@ -1,0 +1,324 @@
+{
+  "TableMetadataList": [
+    {
+      "Name": "foo_bar",
+      "CreateTime": "2022-08-10 17:55:32+00:00",
+      "LastAccessTime": "2022-08-11 09:03:15+00:00",
+      "TableType": "EXTERNAL_TABLE",
+      "Columns": [
+        {
+          "Name": "id",
+          "Type": "string"
+        },
+        {
+          "Name": "name",
+          "Type": "string"
+        },
+        {
+          "Name": "account_id",
+          "Type": "string"
+        },
+        {
+          "Name": "partition_id",
+          "Type": "string"
+        },
+        {
+          "Name": "language_tag",
+          "Type": "string"
+        },
+        {
+          "Name": "email_addresses",
+          "Type": "array<string>"
+        },
+        {
+          "Name": "change_on",
+          "Type": "timestamp"
+        },
+        {
+          "Name": "delete_on",
+          "Type": "timestamp"
+        },
+        {
+          "Name": "acting_party",
+          "Type": "struct<id:string,account_id:string,partition_id:string>"
+        },
+        {
+          "Name": "_keys",
+          "Type": "array<string>"
+        },
+        {
+          "Name": "_sequence",
+          "Type": "struct<cols:array<string>,ops:array<string>>"
+        },
+        {
+          "Name": "_delete",
+          "Type": "struct<col:string,type:string>"
+        },
+        {
+          "Name": "_metadata",
+          "Type": "struct<action:string,object_type:string,trace_id:string,reason:string,region:string,sequence_number:string,dispatch_on:timestamp,arrival_timestamp:bigint,transform_timestamp:bigint,stream_lag:bigint>"
+        },
+        {
+          "Name": "create_on",
+          "Type": "timestamp"
+        }
+      ],
+      "PartitionKeys": [
+        {
+          "Name": "_row_format",
+          "Type": "string"
+        },
+        {
+          "Name": "_year",
+          "Type": "string"
+        },
+        {
+          "Name": "_month",
+          "Type": "string"
+        },
+        {
+          "Name": "_day",
+          "Type": "string"
+        }
+      ],
+      "Parameters": {
+        "CrawlerSchemaDeserializerVersion": "1.0",
+        "CrawlerSchemaSerializerVersion": "1.0",
+        "UPDATED_BY_CRAWLER": "Event Stream Crawler - q2-streaming-test_project-core",
+        "averageRecordSize": "1444",
+        "classification": "parquet",
+        "compressionType": "none",
+        "inputformat": "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat",
+        "location": "s3://alz-datalake-q2/event_stream/test_project/foo_bar/",
+        "objectCount": "2",
+        "outputformat": "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat",
+        "recordCount": "3",
+        "serde.param.serialization.format": "1",
+        "serde.serialization.lib": "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe",
+        "sizeKey": "10081",
+        "typeOfData": "file"
+      }
+    },
+    {
+      "Name": "foo_bar_json",
+      "CreateTime": "2022-08-11 09:03:15+00:00",
+      "LastAccessTime": "2022-08-11 09:03:15+00:00",
+      "TableType": "EXTERNAL_TABLE",
+      "Columns": [
+        {
+          "Name": "type",
+          "Type": "string"
+        },
+        {
+          "Name": "messageid",
+          "Type": "string"
+        },
+        {
+          "Name": "topicarn",
+          "Type": "string"
+        },
+        {
+          "Name": "message",
+          "Type": "string"
+        },
+        {
+          "Name": "timestamp",
+          "Type": "string"
+        },
+        {
+          "Name": "unsubscribeurl",
+          "Type": "string"
+        },
+        {
+          "Name": "messageattributes",
+          "Type": "struct<x-trace-id:struct<Type:string,Value:string>,x-object-type:struct<Type:string,Value:string>>"
+        }
+      ],
+      "PartitionKeys": [
+        {
+          "Name": "dt",
+          "Type": "string"
+        }
+      ],
+      "Parameters": {
+        "CrawlerSchemaDeserializerVersion": "1.0",
+        "CrawlerSchemaSerializerVersion": "1.0",
+        "UPDATED_BY_CRAWLER": "Event Stream Crawler - q2-streaming-test_project-core",
+        "averageRecordSize": "1256",
+        "classification": "json",
+        "compressionType": "none",
+        "inputformat": "org.apache.hadoop.mapred.TextInputFormat",
+        "location": "s3://alz-datalake-q2/event_stream/test_project/foo_bar_json/",
+        "objectCount": "2",
+        "outputformat": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+        "recordCount": "3",
+        "serde.param.paths": "Message,MessageAttributes,MessageId,Timestamp,TopicArn,Type,UnsubscribeURL",
+        "serde.serialization.lib": "org.openx.data.jsonserde.JsonSerDe",
+        "sizeKey": "3768",
+        "typeOfData": "file"
+      }
+    },
+    {
+      "Name": "someother_table",
+      "CreateTime": "2022-08-10 17:55:26+00:00",
+      "LastAccessTime": "2022-08-10 21:02:52+00:00",
+      "TableType": "EXTERNAL_TABLE",
+      "Columns": [
+        {
+          "Name": "account_id",
+          "Type": "string"
+        },
+        {
+          "Name": "partition_id",
+          "Type": "string"
+        },
+        {
+          "Name": "caller_id",
+          "Type": "string"
+        },
+        {
+          "Name": "enabled",
+          "Type": "boolean"
+        },
+        {
+          "Name": "change_on",
+          "Type": "timestamp"
+        },
+        {
+          "Name": "delete_on",
+          "Type": "timestamp"
+        },
+        {
+          "Name": "acting_party",
+          "Type": "struct<id:string,account_id:string,partition_id:string>"
+        },
+        {
+          "Name": "_keys",
+          "Type": "array<string>"
+        },
+        {
+          "Name": "_sequence",
+          "Type": "struct<cols:array<string>,ops:array<string>>"
+        },
+        {
+          "Name": "_delete",
+          "Type": "struct<col:string,type:string>"
+        },
+        {
+          "Name": "_metadata",
+          "Type": "struct<action:string,object_type:string,trace_id:string,reason:string,region:string,sequence_number:string,dispatch_on:timestamp,arrival_timestamp:bigint,transform_timestamp:bigint,stream_lag:bigint>"
+        },
+        {
+          "Name": "create_on",
+          "Type": "timestamp"
+        }
+      ],
+      "PartitionKeys": [
+        {
+          "Name": "_row_format",
+          "Type": "string"
+        },
+        {
+          "Name": "_year",
+          "Type": "string"
+        },
+        {
+          "Name": "_month",
+          "Type": "string"
+        },
+        {
+          "Name": "_day",
+          "Type": "string"
+        }
+      ],
+      "Parameters": {
+        "CrawlerSchemaDeserializerVersion": "1.0",
+        "CrawlerSchemaSerializerVersion": "1.0",
+        "UPDATED_BY_CRAWLER": "Event Stream Crawler - q2-streaming-test_project-core",
+        "averageRecordSize": "1693",
+        "classification": "parquet",
+        "compressionType": "none",
+        "inputformat": "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat",
+        "location": "s3://alz-datalake-q2/event_stream/test_project/test_project_out/",
+        "objectCount": "1",
+        "outputformat": "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat",
+        "recordCount": "1",
+        "serde.param.serialization.format": "1",
+        "serde.serialization.lib": "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe",
+        "sizeKey": "4238",
+        "typeOfData": "file"
+      }
+    },
+    {
+      "Name": "someother_table_json",
+      "CreateTime": "2022-08-10 21:02:53+00:00",
+      "LastAccessTime": "2022-08-10 21:02:52+00:00",
+      "TableType": "EXTERNAL_TABLE",
+      "Columns": [
+        {
+          "Name": "type",
+          "Type": "string"
+        },
+        {
+          "Name": "messageid",
+          "Type": "string"
+        },
+        {
+          "Name": "topicarn",
+          "Type": "string"
+        },
+        {
+          "Name": "message",
+          "Type": "string"
+        },
+        {
+          "Name": "timestamp",
+          "Type": "string"
+        },
+        {
+          "Name": "unsubscribeurl",
+          "Type": "string"
+        },
+        {
+          "Name": "messageattributes",
+          "Type": "struct<x-trace-id:struct<Type:string,Value:string>,x-object-type:struct<Type:string,Value:string>>"
+        }
+      ],
+      "PartitionKeys": [
+        {
+          "Name": "dt",
+          "Type": "string"
+        }
+      ],
+      "Parameters": {
+        "CrawlerSchemaDeserializerVersion": "1.0",
+        "CrawlerSchemaSerializerVersion": "1.0",
+        "UPDATED_BY_CRAWLER": "Event Stream Crawler - q2-streaming-test_project-core",
+        "averageRecordSize": "1153",
+        "classification": "json",
+        "compressionType": "none",
+        "inputformat": "org.apache.hadoop.mapred.TextInputFormat",
+        "location": "s3://alz-datalake-q2/event_stream/test_project/test_project_out_json/",
+        "objectCount": "1",
+        "outputformat": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+        "recordCount": "1",
+        "serde.param.paths": "Message,MessageAttributes,MessageId,Timestamp,TopicArn,Type,UnsubscribeURL",
+        "serde.serialization.lib": "org.openx.data.jsonserde.JsonSerDe",
+        "sizeKey": "1153",
+        "typeOfData": "file"
+      }
+    }
+  ],
+  "ResponseMetadata": {
+    "RequestId": "b4acfcac-6727-4210-8fc8-735d2242d156",
+    "HTTPStatusCode": 200,
+    "HTTPHeaders": {
+      "content-type": "application/x-amz-json-1.1",
+      "date": "Thu, 11 Aug 2022 09:44:18 GMT",
+      "x-amzn-requestid": "b4acfcac-6727-4210-8fc8-735d2242d156",
+      "content-length": "5825",
+      "connection": "keep-alive"
+    },
+    "RetryAttempts": 0
+  }
+}

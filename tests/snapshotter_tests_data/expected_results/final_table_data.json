@@ -1,0 +1,95 @@
+[
+  {
+    "name": "foo_bar",
+    "classification": "parquet",
+    "columns": [
+      "id",
+      "name",
+      "account_id",
+      "partition_id",
+      "language_tag",
+      "email_addresses",
+      "change_on",
+      "delete_on",
+      "acting_party",
+      "_keys",
+      "_sequence",
+      "_delete",
+      "_metadata",
+      "create_on"
+    ],
+    "types": [
+      "string",
+      "string",
+      "string",
+      "string",
+      "string",
+      "array<string>",
+      "timestamp",
+      "timestamp",
+      "struct<id:string,account_id:string,partition_id:string>",
+      "array<string>",
+      "struct<cols:array<string>,ops:array<string>>",
+      "struct<col:string,type:string>",
+      "struct<action:string,object_type:string,trace_id:string,reason:string,region:string,sequence_number:string,dispatch_on:timestamp,arrival_timestamp:bigint,transform_timestamp:bigint,stream_lag:bigint>",
+      "timestamp"
+    ],
+    "temp_format": "temp_foo_bar_{snap_date}",
+    "snap_columns": [
+      "id",
+      "name",
+      "account_id",
+      "partition_id",
+      "language_tag",
+      "email_addresses",
+      "change_on",
+      "delete_on",
+      "acting_party",
+      "_keys",
+      "_sequence",
+      "_delete",
+      "_metadata",
+      "create_on"
+    ],
+    "snap_types": [
+      "string",
+      "string",
+      "string",
+      "string",
+      "string",
+      "array<string>",
+      "timestamp",
+      "timestamp",
+      "struct<id:string,account_id:string,partition_id:string>",
+      "array<string>",
+      "struct<cols:array<string>,ops:array<string>>",
+      "struct<col:string,type:string>",
+      "struct<action:string,object_type:string,trace_id:string,reason:string,region:string,sequence_number:string,dispatch_on:timestamp,arrival_timestamp:bigint,transform_timestamp:bigint,stream_lag:bigint>",
+      "timestamp"
+    ],
+    "snap_types_subs": {},
+    "snap_next_pdate": "{today_iso}",
+    "snap_partition_columns": [
+      "_row_format",
+      "_year",
+      "_month",
+      "_day"
+    ],
+    "snap_table_prefix": "snap/projection/test_project/foo_bar/",
+    "snap_partition_prefix": "snap/projection/test_project/foo_bar/_row_format=parquet/_year={today_year}/_month={today_month}/_day={today_day}/",
+    "keys": [
+      "id"
+    ],
+    "sequence_cols": ["change_on", "_metadata.sequence_number"],
+    "sequence_ops": [
+      "desc",
+      "desc"
+    ],
+    "delete": {
+      "col": "delete_on",
+      "type": "timestamp"
+    },
+    "include_soft_delete": true,
+    "projection_sql": "\n            with stream as (\n                select\n                    row_number() over (partition by a.id order by a.change_on desc, a._metadata.sequence_number desc) as latest_rownum\n                    , row_number() over (partition by a.id order by a.change_on asc, a._metadata.sequence_number asc) as first_rownum\n                    , a.*\n                from\n                    d2_test_project_stream.foo_bar a\n                where true\n                    and date(concat(a._year, '-', a._month, '-', a._day)) between date('{start_date}') and date('{end_date}')\n            ), streamwithcreate as (\n                select\n                    row_number() over (partition by a.id order by a.change_on desc, a._metadata.sequence_number desc) as assert_rownum\n                    ,a.latest_rownum\n                    ,a.first_rownum\n                    ,a.id,a.name,a.account_id,a.partition_id,a.language_tag,a.email_addresses,a.change_on,a.delete_on,a.acting_party,a._keys,a._sequence,a._delete,a._metadata\n                    ,coalesce(b.create_on, c.create_on) as create_on\n                    ,a._row_format\n                    ,a._year\n                    ,a._month\n                    ,a._day\n                from \n                    stream a\n                    left join stream b on true and a.id = b.id and b._metadata.action = 'CREATE' and b.first_rownum = 1\n                    left join d2_test_project_snap.foo_bar c on true and a.id = c.id and date(concat(c._year, '-', c._month, '-', c._day)) = date('{start_date}')\n                where true\n                    and a.latest_rownum = 1\n                order by\n                    a.change_on\n            ), snap_diff as (\n                select\n                    row_number() over (partition by a.id order by a.change_on desc, a._metadata.sequence_number desc) as latest_rownum\n                    , a.*\n                from\n                    d2_test_project_snap.foo_bar a\n                    left join streamwithcreate b on true and a.id = b.id and b.latest_rownum = 1\n                where true\n                    and date(concat(a._year, '-', a._month, '-', a._day)) = date('{start_date}')\n                    and b.id is null\n            ), final as (\n                select\n                    id, name, account_id, partition_id, language_tag, case when cardinality(email_addresses) > 0 then email_addresses else null end as email_addresses, change_on, delete_on, acting_party, case when cardinality(_keys) > 0 then _keys else null end as _keys, _sequence, _delete, _metadata, create_on\n                    {extra_stream_cols}\n                from\n                    streamwithcreate\n                where\n                    latest_rownum = 1\n                    and true\n                union all\n                select\n                    id, name, account_id, partition_id, language_tag, case when cardinality(email_addresses) > 0 then email_addresses else null end as email_addresses, change_on, delete_on, acting_party, case when cardinality(_keys) > 0 then _keys else null end as _keys, _sequence, _delete, _metadata, create_on\n                    {extra_snap_cols}\n                from\n                    snap_diff\n                where\n                    latest_rownum = 1\n                    and true\n            )\n            select * from final"
+  }
+]

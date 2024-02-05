@@ -1,0 +1,36 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Streaming App Parent Stack
+Parameters:
+  EnvironmentType:
+    Description: The type of the environment
+    Type: String
+  CollectorEndpoint:
+    Type: String
+
+Resources:
+  StackCore:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: '{{ stackChildren.core.templateUrl }}'
+      Parameters:
+        StackName: '{{ stackChildren.core.stackName }}'
+        EnvironmentType: !Ref EnvironmentType
+        LambdaBucket: '{{ c.clw.lambdaBucket }}'
+        LambdaZipFile: '{{ c.clw.lambdaZipFile }}'
+        PrivateSubnets: {'Fn::ImportValue': 'SharedVPC-PrivateSubnets'}
+        SecurityGroupLambdaFunctions: {'Fn::ImportValue': !Sub '${EnvironmentType}-data-shared-infrastructure-SecurityGroup'}
+        CollectorEndpoint: !Ref CollectorEndpoint
+
+  Monitoring:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: '{{ stackChildren.monitoring.templateUrl }}'
+      Parameters:
+        StackName: '{{ stackChildren.monitoring.stackName }}'
+
+Outputs:
+  StackName:
+    Description: Parent stack name
+    Value: !Sub '${AWS::StackName}'
+

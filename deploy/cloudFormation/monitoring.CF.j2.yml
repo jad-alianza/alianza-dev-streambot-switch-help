@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: task definitions for monitoring and alarms
+Parameters:
+  StackName:
+    Type: String
+
+#####################################################################
+# Monitoring Stuff
+#####################################################################
+
+{% set ecShared   = c.ent|selectattr('keyName','eq','shared')|first %}
+Resources:
+{% for ec in c.ent|selectattr('keyName','ne','shared') %}
+  Function{{ ec.resName }}TransformerAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: 'WARNING: {{ ec.transformer.functionName }}'
+      AlarmDescription: 'https://alianza.atlassian.net/wiki/spaces/DEV/pages/2788687987/Phoenix+team+troubleshooting+guide+for+on-call+support+in+data+domain'
+      AlarmActions:
+        - '{{ c.clw.pagerDutyTopicDefault }}'
+      Namespace: 'AWS/Lambda'
+      MetricName: Errors
+      Dimensions:
+      - Name: FunctionName
+        Value: "{{ ec.transformer.functionName }}"
+      Statistic: Sum
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      EvaluationPeriods: 1
+      Period: 60
+      TreatMissingData: notBreaching
+
+{% endfor %}
+
+  FunctionDailySnapshotterAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: 'WARNING: {{ ecShared.snapshotter.functionName }}'
+      AlarmDescription: 'https://alianza.atlassian.net/wiki/spaces/DEV/pages/2788687987/Phoenix+team+troubleshooting+guide+for+on-call+support+in+data+domain'
+      AlarmActions:
+        - '{{ c.clw.pagerDutyTopicDefault }}'
+      Namespace: 'AWS/Lambda'
+      MetricName: Errors
+      Dimensions:
+      - Name: FunctionName
+        Value: "{{ ecShared.snapshotter.functionName }}"
+      Statistic: Sum
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      EvaluationPeriods: 1
+      Period: 60
+      TreatMissingData: notBreaching

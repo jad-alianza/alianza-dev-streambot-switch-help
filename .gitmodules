@@ -1,0 +1,4 @@
+[submodule "data-shared-project-utils"]
+	path = data-shared-project-utils
+	url = git@github.com:alianza-dev/data-shared-project-utils.git
+	branch = master

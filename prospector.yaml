@@ -1,0 +1,3 @@
+# Prospector linter configuration
+inherits:
+  - data-shared-project-utils/streaming/prospector.yaml

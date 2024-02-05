@@ -1,0 +1,5 @@
+
+collections:
+  - name: git@github.com:alianza-dev/phoenix-ansible-collection.git
+    type: git
+    version: stable

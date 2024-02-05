@@ -1,0 +1,11 @@
+debugRoles: True
+entityRoster:
+  fooBar:
+    name: 'foo_bar'
+    sns:
+      filter:
+        match: 'exact'
+        key  : 'type'
+        vals :
+          - 'example_value'
+      topicArn: '__placeholder__'

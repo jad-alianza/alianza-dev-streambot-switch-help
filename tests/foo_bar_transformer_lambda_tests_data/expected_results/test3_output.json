@@ -1,0 +1,11 @@
+{
+  "records": [
+    {
+      "recordId": "49631380792963518345032124902370099618280803955426459650000000",
+      "result": "ProcessingFailed",
+      "data": {
+//      there should be the same data as in test1_sns_message_decoded.json
+      }
+    }
+  ]
+}

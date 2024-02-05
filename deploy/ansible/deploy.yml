@@ -1,0 +1,65 @@
+---
+- name: Deploy app
+  gather_facts: true
+  hosts: localhost
+  connection: local
+  vars:
+    _app: "{{lookup('ansible.builtin.env', 'APP_NAME_FULL')}}"
+    _appShort: "{{lookup('ansible.builtin.env', 'APP_NAME_SHORT')}}"
+  collections:
+    - alianza.phoenix
+
+  tasks:
+    #unununununununununununununununununununununununununununununun
+    # || Role merge_vars ||
+    #unununununununununununununununununununununununununununununun
+    - name: Cascading deep merge of Ansible variable files in role and playbook
+      import_role:
+        name: merge_vars
+
+    - name: Show vars after `merge_vars`
+      debug:
+        msg:
+          app: '{{ app }}'
+          entityRoster: '{{ entityRoster }}'
+          resourceConfig: '{{ resourceConfig }}'
+
+    #unununununununununununununununununununununununununununununun
+    # || Role aws_assume_role ||
+    #unununununununununununununununununununununununununununununun
+    - name: Use role to assume AWS role with deploy permissions
+      import_role:
+        name: aws_assume_role
+
+    #unununununununununununununununununununununununununununununun
+    # || Role datalake_config ||
+    #unununununununununununununununununununununununununununununun
+    - name: Use a role to derive `datalakeConfig`
+      import_role:
+        name: datalake_config
+
+    #unununununununununununununununununununununununununununununun
+    # || Role entity_config ||
+    #unununununununununununununununununununununununununununununun
+    - name: Use a role to derive `entityConfig`
+      import_role:
+        name: entity_config
+
+    #unununununununununununununununununununununununununununununun
+    # || Role cloudformation ||
+    #unununununununununununununununununununununununununununununun
+
+    - name: Show loaded config vars prior to `cloudformation`
+      debug:
+        msg:
+          app: '{{ app }}'
+          entityRoster: '{{ entityRoster }}'
+          cloudConfig: '{{ cloudConfig }}'
+          resourceConfig: '{{ resourceConfig }}'
+          datalakeConfig: '{{ datalakeConfig }}'
+          entityConfig: '{{ entityConfig }}'
+          configOverride: '{{ configOverride }}'
+
+    - name: Use a role to sync and execute cloudformation
+      include_role:
+        name: cloudformation

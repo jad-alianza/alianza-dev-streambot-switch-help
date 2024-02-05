@@ -1,0 +1,21 @@
+stackConfig:
+  name: '{{ c.clw.parentStackName }}'
+  template:
+    path: '{{ playbook_dir }}/../cloudFormation'
+    file: 'parent.CF.j2.yml'
+  children:
+    - id: 'core'
+    - id: 'monitoring'
+  template_parameters:
+    EnvironmentType: '{{ environmentType }}'
+    CollectorEndpoint: '{{ c.clw.otelCollector }}'
+  tags:
+    app: '{{ app.name }}'
+    cat_domain: data
+    cat_subdomain: data-ingestion
+    cat_product: reports
+    cat_feature: streaming-entities
+    cat_environment: '{{ environmentType }}'
+    cat_scm: '{{ app.name }}'
+    cat_internal: false
+    environmentType: '{{ environmentType }}'

@@ -1,0 +1,32 @@
+{
+  "records": [
+    {
+      "recordId": "49631380792963518345032124902367681766641574628357570562000000",
+      "result": "Ok",
+      "data": {
+        "SOMETESTDATA": 1234567890
+      },
+      "metadata": {
+        "partitionKeys": {
+          "year": "2022",
+          "month": "11",
+          "day": "18"
+        }
+      }
+    },
+{
+      "recordId": "49631380792963518345032124902370099618280803955426459650000000",
+      "result": "Ok",
+      "data": {
+        "SOMETESTDATA": 1234567890
+      },
+      "metadata": {
+        "partitionKeys": {
+          "year": "2022",
+          "month": "11",
+          "day": "15"
+        }
+      }
+    }
+  ]
+}

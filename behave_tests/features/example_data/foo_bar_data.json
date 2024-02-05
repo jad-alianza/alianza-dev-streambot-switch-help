@@ -1,0 +1,17 @@
+{
+  "Type": "Notification",
+  "MessageId": "78337912-ae3d-5724-8a74-22fadb7034c3",
+  "TopicArn": "arn:aws:sns:us-east-2:687288345179:q2-test-streaming-project-foo-bar",
+  "Message": {
+    "partitionId": "<replace_aqa_id>",
+    "SOMETESTDATA": 1234567890
+  },
+  "Timestamp": "2022-11-11T16:06:37.640Z",
+  "UnsubscribeURL": "https://sns.us-east-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-2:687288345179:q2-q2-test-streaming-project-foo-bar:844f22ed-05f7-4388-aee9-82fadc83f208",
+  "MessageAttributes": {
+    "SOME_ATTRIBUTE": {
+      "Type": "String",
+      "Value": "TEST"
+    }
+  }
+}

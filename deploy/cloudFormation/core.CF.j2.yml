@@ -1,0 +1,560 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Streaming App Core Stack
+Parameters:
+  StackName:
+    Type: String
+  EnvironmentType:
+    Type: String
+  LambdaBucket:
+    Type: String
+  LambdaZipFile:
+    Type: String
+  PrivateSubnets:
+    Description: The private subnets for the VPC
+    Type: CommaDelimitedList
+  SecurityGroupLambdaFunctions:
+    Type: String
+  CollectorEndpoint:
+    Description: OTEL Collector endpoint
+    Type: String
+
+Conditions:
+  IsProduction: {'Fn::Equals': [!Ref EnvironmentType, p2]}
+
+{% set ecShared   = c.ent|selectattr('keyName','eq','shared')|first %}
+{% set ecFooBar = c.ent|selectattr('keyName','eq','fooBar')|first %}
+Resources:
+  ### Roles ###
+  RoleLambdaFunctions:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: lambda.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: "cloudwatch-logs"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+        - PolicyName: "s3"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:DeleteObject
+                  - s3:DeleteObjectVersion
+                  - s3:GetBucketLocation
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:ListBucket
+                  - s3:ListBucketByTags
+                  - s3:ListObjects
+                  - s3:PutObject
+                  - s3:PutObjectAcl
+                Resource:
+                  - "arn:aws:s3:::{{ c.dlk.athena.bucket }}"
+                  - "arn:aws:s3:::{{ c.dlk.raw.bucket }}"
+                  - "arn:aws:s3:::{{ c.dlk.stream.bucket }}"
+                  - "arn:aws:s3:::{{ c.dlk.snap.bucket }}"
+                  - "arn:aws:s3:::{{ c.dlk.athena.bucket }}/{{ c.dlk.athena.prefix }}/*"
+                  - "arn:aws:s3:::{{ c.dlk.raw.bucket }}/{{ c.dlk.raw.prefix.normal }}/*"
+                  - "arn:aws:s3:::{{ c.dlk.raw.bucket }}/{{ c.dlk.raw.prefix.error }}/*"
+                  - "arn:aws:s3:::{{ c.dlk.stream.bucket }}/{{ c.dlk.stream.prefix.normal }}/*"
+                  - "arn:aws:s3:::{{ c.dlk.stream.bucket }}/{{ c.dlk.stream.prefix.error }}/*"
+                  - "arn:aws:s3:::{{ c.dlk.snap.bucket }}/{{ c.dlk.snap.prefix.normal }}/*"
+                  - "arn:aws:s3:::{{ c.dlk.snap.bucket }}/{{ c.dlk.snap.prefix.error }}/*"
+        - PolicyName: "athena_glue"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - athena:BatchGetQueryExecution
+                  - athena:GetDatabase
+                  - athena:GetQueryExecution
+                  - athena:GetQueryResults
+                  - athena:GetWorkGroup
+                  - athena:ListDatabases
+                  - athena:ListQueryExecutions
+                  - athena:ListTableMetadata
+                  - athena:ListWorkGroups
+                  - athena:StartQueryExecution
+                  - athena:StopQueryExecution
+                  - glue:BatchCreatePartition
+                  - glue:CreatePartition
+                  - glue:CreateTable
+                  - glue:DeletePartition
+                  - glue:DeleteTable
+                  - glue:GetDatabase
+                  - glue:GetPartition
+                  - glue:GetPartitions
+                  - glue:GetTable
+                  - glue:GetTables
+                  - glue:UpdateTable
+                Resource: "*"
+
+  RoleFirehoseDeliveryStream:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: firehose.amazonaws.com
+      Policies:
+        - PolicyName: "s3"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:PutObjectAcl
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:DeleteObject
+                  - s3:DeleteObjectVersion
+                  - s3:ListObjects
+                  - s3:ListBucket
+                  - s3:ListBucketByTags
+                  - s3:GetBucketLocation
+                  - s3:AbortMultipartUpload
+                  - s3:ListBucketMultipartUploads
+                Resource:
+                  - "arn:aws:s3:::{{ c.dlk.raw.bucket }}"
+                  - "arn:aws:s3:::{{ c.dlk.stream.bucket }}"
+                  - "arn:aws:s3:::{{ c.dlk.raw.bucket }}/{{ c.dlk.raw.prefix.normal }}/*"
+                  - "arn:aws:s3:::{{ c.dlk.raw.bucket }}/{{ c.dlk.raw.prefix.error }}/*"
+                  - "arn:aws:s3:::{{ c.dlk.stream.bucket }}/{{ c.dlk.stream.prefix.normal }}/*"
+                  - "arn:aws:s3:::{{ c.dlk.stream.bucket }}/{{ c.dlk.stream.prefix.error }}/*"
+        - PolicyName: "cloudwatch_glue"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - glue:GetTable*
+                Resource: "*"
+        - PolicyName: "lambda"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                  - lambda:GetFunctionConfiguration
+                Resource:
+{% for ec in c.ent|selectattr('keyName','ne','shared') %}
+                  - !GetAtt Function{{ ec.resName }}Transformer.Arn
+{% endfor %}
+
+  RoleDeliveryStreamSubscription:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: sns.amazonaws.com
+      Policies:
+      - PolicyName: "sns-to-kinesis"
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Action:
+              - firehose:DescribeDeliveryStream
+              - firehose:ListDeliveryStreams
+              - firehose:ListTagsForDeliveryStream
+              - firehose:PutRecord
+              - firehose:PutRecordBatch
+            Effect: Allow
+            Resource:
+{% for ec in c.ent|selectattr('keyName','ne','shared') %}
+              - !GetAtt DeliveryStream{{ ec.resName }}.Arn
+{% endfor %}
+
+{% for ec in c.ent|selectattr('keyName','ne','shared') %}
+  ### Topic, Rule, Permission, & Security ###
+  SnsTopicBulkMessagesStreamHook{{ ec.resName }}:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "${StackName}-{{ ec.tagName }}-bulk-message-hook"
+
+  PolicySnsBulkMessagesAllowFunctionLoader{{ ec.resName }}:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: AllowIntegratedAccounts
+          Effect: Allow
+          Principal:
+            AWS:
+              - '{{ ec.sns.awsAccount }}'
+              - !Ref AWS::AccountId
+          Resource: !Ref SnsTopicBulkMessagesStreamHook{{ ec.resName }}
+          Action:
+            - sns:Subscribe
+            - sns:Receive
+            - sns:Publish
+            - sns:ListSubscriptionsByTopic
+            - sns:GetTopicAttributes
+            - sns:SetTopicAttributes
+      Topics:
+        - !Ref SnsTopicBulkMessagesStreamHook{{ ec.resName }}
+{% endfor %}
+
+  CloudWatchRuleScheduleFunctionDailySnapshotter:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "${StackName}-schedule-daily-snapshotter"
+      ScheduleExpression: 'cron(5 0 * * ? *)'
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt FunctionDailySnapshotter.Arn
+          Id: !Ref FunctionDailySnapshotter
+          RetryPolicy:
+            MaximumRetryAttempts: 1
+            MaximumEventAgeInSeconds: 1200
+
+  PermissionEventsInvokeFunctionDailySnapshotter:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref FunctionDailySnapshotter
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt CloudWatchRuleScheduleFunctionDailySnapshotter.Arn
+
+  ### Functions ###
+{% for ec in c.ent|selectattr('keyName','ne','shared') %}
+  Function{{ ec.resName }}Transformer:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref LambdaBucket
+        S3Key: !Ref LambdaZipFile
+      Environment:
+        Variables:
+          ENVIRONMENT_TYPE: !Ref EnvironmentType
+          OTEL_EXPORTER_OTLP_ENDPOINT: !Ref CollectorEndpoint
+          AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
+      Handler: "{{ ec.transformer.handler }}"
+      Role: !GetAtt RoleLambdaFunctions.Arn
+      Architectures: {{ ec.transformer.architectures }}
+      Runtime: {{ ec.transformer.runtime }}
+      FunctionName: "{{ ec.transformer.functionName }}"
+      MemorySize: {{ ec.transformer.memorySize }}
+      Timeout: {{ ec.transformer.timeout }}
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref SecurityGroupLambdaFunctions
+        SubnetIds: !Ref PrivateSubnets
+      Layers:
+        - !Sub 'arn:aws:lambda:${AWS::Region}:184161586896:layer:opentelemetry-python-0_3_0:1'
+
+{% endfor %}
+
+  FunctionDailySnapshotter:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref LambdaBucket
+        S3Key: !Ref LambdaZipFile
+      Environment:
+        Variables:
+          ENVIRONMENT_TYPE: !Ref EnvironmentType
+          STREAM_DATABASE: "{{ c.dlk.stream.database }}"
+          SNAP_DATABASE: "{{ c.dlk.snap.database }}"
+          SNAP_BUCKET: "{{ c.dlk.snap.bucket }}"
+          SNAP_PREFIX: "{{ c.dlk.snap.prefix.normal }}"
+          ATHENA_RESULTS_LOCATION: "s3://{{ c.dlk.athena.bucket }}/{{ c.dlk.athena.prefix }}"
+          ATHENA_WORK_GROUP: "primary"          
+      Handler: "{{ ecShared.snapshotter.handler }}"
+      Role: !GetAtt RoleLambdaFunctions.Arn
+      Architectures: {{ ecShared.snapshotter.architectures }}
+      Runtime: {{ ecShared.snapshotter.runtime }}
+      FunctionName: "{{ ecShared.snapshotter.functionName }}"
+      MemorySize: {{ ecShared.snapshotter.memorySize }}
+      Timeout: 900 # NOTE: Athena may hit TooManyRequestsException so we're allowing all 900s (max) for the embedded retry logic.
+
+  ### Glue Databases ###
+  GlueDatabaseRaw:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Description: !Sub "Glue Database containing original 'raw' entities for ${StackName} (ex: JSON)"
+        Name: "{{ c.dlk.raw.database }}"
+
+  GlueDatabaseStream:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Description: !Sub "Glue Database containing transformed 'stream' entities for ${StackName}"
+        Name: "{{ c.dlk.stream.database }}"
+
+  GlueDatabaseSnap:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Description: !Sub "Glue Database containing 'snapshot' data for ${StackName}"
+        Name: "{{ c.dlk.snap.database }}"
+
+{% for ec in c.ent|selectattr('keyName','ne','shared') %}
+  ### {{ ec.tagName }} :: Raw Glue Table ###
+  GlueTableJson{{ ec.resName }}:
+    Type: AWS::Glue::Table
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseName: !Ref GlueDatabaseRaw
+      TableInput:
+        Description: "{{ ec.sqlName }} entities in their original raw JSON SNS envelope"
+        Name: {{ ec.sqlName }}
+        TableType: EXTERNAL_TABLE
+        Parameters:
+          classification: json
+          compressionType: none
+          typeOfData: file
+          cloudformationTag: "{{ ARTIFACT_VERSION }}"
+        StorageDescriptor:
+          Columns:
+          - Name: message
+            Type: string
+          - Name: messageattributes
+            Type: string
+          - Name: messageid
+            Type: string
+          - Name: snstimestamp
+            Type: string
+          - Name: topicarn
+            Type: string
+          - Name: type
+            Type: string
+          - Name: unsubscribeurl
+            Type: string
+          Location: "{{ ec.raw.location }}"
+          InputFormat: org.apache.hadoop.mapred.TextInputFormat
+          OutputFormat: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+          SerdeInfo:
+            Parameters:
+              case.insensitive: 'TRUE'
+              mapping.snstimestamp: 'timestamp'
+            SerializationLibrary: org.openx.data.jsonserde.JsonSerDe
+        PartitionKeys:
+        - Name: _row_format
+          Type: string
+        - Name: _date
+          Type: date
+
+{% endfor %}
+
+  GlueTableParquetFooBar:
+    Type: AWS::Glue::Table
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseName: !Ref GlueDatabaseStream
+      TableInput:
+        Description: "foo_bar entities AFTER custom transformation by lambda function"
+        Name: foo_bar
+        TableType: EXTERNAL_TABLE
+        Parameters:
+          classification: parquet
+          compressionType: none
+          cloudformationTag: "{{ ARTIFACT_VERSION }}"
+        StorageDescriptor:
+          Columns:
+          - Name: id
+            Type: string
+          - Name: account_id
+            Type: string
+          - Name: partition_id
+            Type: string
+          - Name: foo_name
+            Type: string
+          - Name: foo_complex
+            Type: 'array<struct<id:string,name:string,time_zone:string>>'
+          - Name: event_on
+            Type: timestamp
+          - Name: create_on
+            Type: timestamp
+          - Name: delete_on
+            Type: timestamp
+          - Name: _keys
+            Type: 'array<string>'
+          - Name: _sequence
+            Type: 'struct<cols:array<string>,ops:array<string>>'
+          - Name: _delete
+            Type: 'struct<col:string,type:string>'
+          - Name: _metadata
+            Type: 'struct<action:string,object_type:string,sent_timestamp:bigint,arrival_timestamp:bigint,transform_timestamp:bigint,stream_lag:bigint,envelope:struct<version:string,id:string,trace_id:string,date_time:string,source:string,shard_id:string,type:string>>'
+          - Name: _date
+            Type: date
+          Location: "{{ ecFooBar.stream.location }}"
+          InputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+          OutputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+          SerdeInfo:
+            Parameters:
+              serialization.format: "1"
+            SerializationLibrary: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+        PartitionKeys:
+        - Name: _row_format
+          Type: string
+        - Name: _year
+          Type: string
+        - Name: _month
+          Type: string
+        - Name: _day
+          Type: string
+
+
+{% for ec in c.ent|selectattr('keyName','ne','shared') %}
+{% set ecfh     = ec.get('firehoseStream', {}) %}
+{% set ecFhDeep = dict( bh=ecfh.get('bufferingHints', {}), cw=ecfh.get('cloudWatchLog', {}), rb=ecfh.get('rawBackupMode', {}) ) %}
+  ### {{ ec.tagName }} :: SNS Subscriptions, Firehose DeliveryStream, Firehose LogGroups & LogStreams ###
+  SnsSubscriptionDeliveryStream{{ ec.resName }}BulkMessages:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref SnsTopicBulkMessagesStreamHook{{ ec.resName }}
+      Endpoint: !GetAtt DeliveryStream{{ ec.resName }}.Arn
+      Protocol: firehose
+      Region: !Ref AWS::Region
+      RawMessageDelivery: false
+      SubscriptionRoleArn: !GetAtt RoleDeliveryStreamSubscription.Arn
+      {{ "FilterPolicy: '%s'"|format(ec.sns.filterPolicy) if ec.sns.filterPolicy else "" }}
+
+  SnsSubscriptionDeliveryStream{{ ec.resName }}:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: "{{ ec.sns.topicArn }}"
+      Endpoint: !GetAtt DeliveryStream{{ ec.resName }}.Arn
+      Protocol: firehose
+      Region: !Ref AWS::Region
+      RawMessageDelivery: false
+      SubscriptionRoleArn: !GetAtt RoleDeliveryStreamSubscription.Arn
+      {{ "FilterPolicy: '%s'"|format(ec.sns.filterPolicy) if ec.sns.filterPolicy else "" }}
+
+  DeliveryStream{{ ec.resName }}:
+    Type: AWS::KinesisFirehose::DeliveryStream
+    Properties:
+      DeliveryStreamName: !Sub "${StackName}-{{ ec.tagName }}"
+      ExtendedS3DestinationConfiguration:
+        BucketARN: "arn:aws:s3:::{{ c.dlk.stream.bucket }}"
+        RoleARN: !GetAtt RoleFirehoseDeliveryStream.Arn
+        BufferingHints:
+          IntervalInSeconds: {{ ecFhDeep.bh.intervalSecs }}
+          SizeInMBs: {{ ecFhDeep.bh.sizeMbs }}
+        CloudWatchLoggingOptions:
+          Enabled: {{ ecFhDeep.cw.enabled }}
+          LogGroupName: !Ref LogGroupDeliveryStream{{ ec.resName }}
+          LogStreamName: S3Delivery
+        CompressionFormat: UNCOMPRESSED
+        DataFormatConversionConfiguration:
+          Enabled: true
+          InputFormatConfiguration:
+            Deserializer:
+              OpenXJsonSerDe:
+                CaseInsensitive: true
+                ConvertDotsInJsonKeysToUnderscores: true
+          OutputFormatConfiguration:
+            Serializer:
+              ParquetSerDe:
+                BlockSizeBytes: 67108864
+                Compression: SNAPPY
+          SchemaConfiguration:
+            CatalogId: !Ref AWS::AccountId
+            DatabaseName: !Ref GlueDatabaseStream
+            Region: !Ref AWS::Region
+            RoleARN: !GetAtt RoleFirehoseDeliveryStream.Arn
+            TableName: !Ref GlueTableParquet{{ ec.resName }}
+        ErrorOutputPrefix: "{{ ec.stream.errorPrefix }}"
+        Prefix           : "{{ ec.stream.normalPrefix }}"
+        DynamicPartitioningConfiguration:
+          Enabled: true
+          RetryOptions:
+            DurationInSeconds: 300
+        ProcessingConfiguration:
+          Enabled: true
+          Processors:
+            - Type: Lambda
+              Parameters:
+              - ParameterName: LambdaArn
+                ParameterValue: !GetAtt Function{{ ec.resName }}Transformer.Arn
+              - ParameterName: NumberOfRetries
+                ParameterValue: 2
+              - ParameterName: BufferSizeInMBs
+                ParameterValue: 3
+              - ParameterName: BufferIntervalInSeconds
+                ParameterValue: 60
+            - Type: AppendDelimiterToRecord
+              Parameters:
+              - ParameterName: Delimiter
+                ParameterValue: "\\n"
+        S3BackupMode: {{ ecFhDeep.rb.mode }}
+        S3BackupConfiguration:
+          BucketARN: "arn:aws:s3:::{{ c.dlk.raw.bucket }}"
+          RoleARN: !GetAtt RoleFirehoseDeliveryStream.Arn
+          BufferingHints:
+            IntervalInSeconds: {{ ecFhDeep.rb.bufferingHints.intervalSecs }}
+            SizeInMBs: {{ ecFhDeep.rb.bufferingHints.sizeMbs }}
+          CloudWatchLoggingOptions:
+            Enabled: {{ ecFhDeep.rb.cloudWatchLog.enabled }}
+            LogGroupName: !Ref LogGroupDeliveryStreamBackup{{ ec.resName }}
+            LogStreamName: S3Delivery
+          CompressionFormat: UNCOMPRESSED
+          ErrorOutputPrefix: "{{ ec.raw.errorPrefix }}"
+          Prefix           : "{{ ec.raw.normalPrefix }}"
+
+  LogGroupDeliveryStream{{ ec.resName }}:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/kinesisfirehose/${StackName}-{{ ec.tagName }}"
+      RetentionInDays: {{ ecFhDeep.cw.retentionDays }}
+
+  LogStreamS3DeliveryStream{{ ec.resName }}:
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName: !Ref LogGroupDeliveryStream{{ ec.resName }}
+      LogStreamName: S3Delivery
+
+  LogGroupDeliveryStreamBackup{{ ec.resName }}:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/kinesisfirehose/${StackName}-{{ ec.tagName }}-backup"
+      RetentionInDays: {{ ecFhDeep.rb.cloudWatchLog.retentionDays }}
+
+  LogStreamS3DeliveryStreamBackup{{ ec.resName }}:
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName: !Ref LogGroupDeliveryStreamBackup{{ ec.resName }}
+      LogStreamName: S3Delivery
+
+{% endfor %}
+Outputs:
+  StackName:
+    Description: Child stack name
+    Value: !Sub '${StackName}'
+

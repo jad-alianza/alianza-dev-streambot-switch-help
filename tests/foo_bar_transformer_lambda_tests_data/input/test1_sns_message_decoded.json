@@ -1,0 +1,19 @@
+{
+  "invocationId": "4a55de2a-5355-4e3e-b376-e51b69440d8b",
+  "deliveryStreamArn": "arn:aws:firehose:us-east-2:687288345179:deliverystream/d2-streaming-foo-bar-data",
+  "region": "us-east-2",
+  "records": [
+    {
+      "recordId": "49631380792963518345032124902370099618280803955426459650000000",
+      "approximateArrivalTimestamp": 1657805108438,
+      "data": {
+//        "Type": "Notification",
+//        "MessageId": "2b13a34f-ffff-5835-b796-f8371e219b93",
+//        "TopicArn": "arn:aws:sns:us-east-2:314496387756:dev-dev-siptrunk-v3",
+//        "Message": "{\n    \"version\": \"1.1\",\n    \"id\": \"msgid111\",\n    \"traceId\": \"c88335a8-3bf0-1bf7-ffff-2efca7335d14\",\n    \"dateTime\": \"2022-11-15T11:00:56.222333Z\",\n    \"source\": \"SIP_TRUNK\",\n    \"type\": \"CREATE\",\n    \"extensions\": {\n        \"action\": \"CREATE\",\n        \"actingParty\": \"{\\\"userId\\\":\\\"d4P4dTIBQ4KtTjVwfog1dg\\\",\\\"username\\\":\\\"automation@alianza.com\\\",\\\"userType\\\":\\\"AlianzaUser\\\",\\\"partitionId\\\":\\\"1\\\",\\\"permissions\\\":{\\\"Account\\\":\\\"DELETE\\\",\\\"AccountHistory\\\":\\\"READ\\\",\\\"AccountCallHistory\\\":\\\"READ\\\",\\\"AccountBulkStatuses\\\":\\\"EDIT\\\",\\\"IpWhitelist\\\":\\\"EDIT\\\",\\\"PhoneNumber\\\":\\\"READ\\\",\\\"PhoneNumberServiceActivation\\\":\\\"DELETE\\\",\\\"PhoneNumberInventory\\\":\\\"CREATE\\\",\\\"Product\\\":\\\"READ\\\",\\\"ProductCallingPlan\\\":\\\"DELETE\\\",\\\"ProductGroups\\\":\\\"DELETE\\\",\\\"ProductUsers\\\":\\\"DELETE\\\",\\\"Reports\\\":\\\"READ\\\",\\\"RoutePlan\\\":\\\"DELETE\\\",\\\"SipCredentials\\\":\\\"EDIT\\\",\\\"ALIANZA_MasterRoutePlan\\\":\\\"DELETE\\\",\\\"ALIANZA_TogglzAdmin\\\":\\\"EDIT\\\",\\\"ANY_MANAGEMENT_USER\\\":\\\"DELETE\\\",\\\"ANY_ALIANZA_USER\\\":\\\"DELETE\\\"}}\"\n    },\n    \"contents\": \"{\\n  \\\"trunkName\\\": \\\"tnm111\\\",\\n  \\\"sipUsername\\\": \\\"sunm111\\\",\\n  \\\"callbackNumber\\\": \\\"18012224444\\\",\\n  \\\"sipProxyServer\\\": \\\"sip:localhost\\\",\\n  \\\"localServicesEnabled\\\": true,\\n  \\\"partitionId\\\": \\\"p111\\\",\\n  \\\"sipPassword\\\": \\\"pass\\\",\\n  \\\"forward\\\": {\\n    \\\"partitionId\\\": \\\"p222\\\",\\n    \\\"accountId\\\": \\\"a222\\\",\\n    \\\"sipTrunkId\\\": \\\"st222\\\",\\n    \\\"forwardAlways\\\": {\\n      \\\"referenceType\\\": \\\"END_USER\\\",\\n      \\\"referenceId\\\": \\\"u888\\\",\\n      \\\"enabled\\\": true\\n    },\\n    \\\"forwardOnFailure\\\": [{\\n      \\\"referenceType\\\": \\\"TELEPHONE\\\",\\n      \\\"referenceId\\\": \\\"18015556666\\\"\\n      },{\\n        \\\"referenceType\\\": \\\"VOICEMAIL\\\",\\n        \\\"referenceId\\\": \\\"vm888\\\"\\n      }\\n    ],\\n    \\\"forwardOnCapacity\\\": [{\\n      \\\"referenceType\\\": \\\"SIP_TRUNK\\\",\\n      \\\"referenceId\\\": \\\"st888\\\"\\n      },{\\n        \\\"referenceType\\\": \\\"VOICEMAIL\\\",\\n        \\\"referenceId\\\": \\\"vm999\\\"\\n      }\\n    ]\\n  },\\n  \\\"primaryTn\\\": \\\"18013334444\\\",\\n  \\\"accountId\\\": \\\"a111\\\",\\n  \\\"concurrentCalls\\\": 3,\\n  \\\"extensionPatterns\\\": [\\\"11*\\\", \\\"133*\\\"],\\n  \\\"stirShakenExpandedCallerIdVerification\\\": true,\\n  \\\"telephoneNumbers\\\": [\\\"18013334444\\\", \\\"18016667777\\\"],\\n  \\\"lockedOut\\\": true,\\n  \\\"id\\\": \\\"st111\\\",\\n  \\\"account\\\": {\\n    \\\"partitionId\\\": \\\"p111\\\",\\n    \\\"platformType\\\": \\\"CPE1\\\",\\n    \\\"routePlanId\\\": \\\"rp11\\\",\\n    \\\"id\\\": \\\"a111\\\"\\n  }\\n}\\n\"\n}",
+//        "Timestamp": "2022-11-15T11:00:57.111Z",
+//        "UnsubscribeURL": "https://sns.us-east-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-2:147326115264:dev-dev-siptrunk-v3:c5e423b3-386e-4d95-b2c9-f5af8b63ff6a"
+      }
+    }
+  ]
+}

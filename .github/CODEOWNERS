@@ -1,0 +1,28 @@
+# Order is important! The last matching pattern takes the most precedence
+
+# Application Code
+lambdas/** @alianza-dev/dataandreporting-devs
+__init__.py @alianza-dev/dataandreporting-devs
+
+# Testing
+behave_tests/** @alianza-dev/dataandreporting-devs
+tests/** @alianza-dev/dataandreporting-devs
+
+# Other dev stuff
+.core.env @alianza-dev/dataandreporting-devs
+.env @alianza-dev/dataandreporting-devs
+Makefile @alianza-dev/dataandreporting-devs
+Pipfile @alianza-dev/dataandreporting-devs
+prospector.yaml @alianza-dev/dataandreporting-devs
+pytest.ini @alianza-dev/dataandreporting-devs
+README.md @alianza-dev/dataandreporting-devs
+
+# Infrastructure
+.buildkite/** @alianza-dev/dataandreporting-devops
+deploy/** @alianza-dev/dataandreporting-devops
+
+# Miscellaneous
+.github/** @alianza-dev/dataandreporting-devops
+.gitignore @alianza-dev/dataandreporting-devops
+.gitmodules @alianza-dev/dataandreporting-devops
+data-shared-project-utils/** @alianza-dev/dataandreporting-devops

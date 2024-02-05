@@ -1,0 +1,122 @@
+{
+  "UpdateCount": 0,
+  "ResultSet": {
+    "Rows": [
+      {
+        "Data": [
+          {
+            "VarCharValue": "_keys"
+          },
+          {
+            "VarCharValue": "cols"
+          },
+          {
+            "VarCharValue": "ops"
+          },
+          {
+            "VarCharValue": "col"
+          },
+          {
+            "VarCharValue": "type"
+          }
+        ]
+      },
+      {
+        "Data": [
+        {
+          "VarCharValue": "[id]"
+        },
+        {
+          "VarCharValue": "[change_on, _metadata.sequence_number]"
+        },
+        {
+          "VarCharValue": "[desc, desc]"
+        },
+        {
+          "VarCharValue": "delete_on"
+        },
+        {
+          "VarCharValue": "timestamp"
+        }
+      ]
+      }
+    ],
+    "ResultSetMetadata": {
+      "ColumnInfo": [
+        {
+          "CatalogName": "hive",
+          "SchemaName": "",
+          "TableName": "",
+          "Name": "_keys",
+          "Label": "_keys",
+          "Type": "array",
+          "Precision": 0,
+          "Scale": 0,
+          "Nullable": "UNKNOWN",
+          "CaseSensitive": false
+        },
+        {
+          "CatalogName": "hive",
+          "SchemaName": "",
+          "TableName": "",
+          "Name": "cols",
+          "Label": "cols",
+          "Type": "array",
+          "Precision": 0,
+          "Scale": 0,
+          "Nullable": "UNKNOWN",
+          "CaseSensitive": false
+        },
+        {
+          "CatalogName": "hive",
+          "SchemaName": "",
+          "TableName": "",
+          "Name": "ops",
+          "Label": "ops",
+          "Type": "array",
+          "Precision": 0,
+          "Scale": 0,
+          "Nullable": "UNKNOWN",
+          "CaseSensitive": false
+        },
+        {
+          "CatalogName": "hive",
+          "SchemaName": "",
+          "TableName": "",
+          "Name": "col",
+          "Label": "col",
+          "Type": "varchar",
+          "Precision": 2147483647,
+          "Scale": 0,
+          "Nullable": "UNKNOWN",
+          "CaseSensitive": true
+        },
+        {
+          "CatalogName": "hive",
+          "SchemaName": "",
+          "TableName": "",
+          "Name": "type",
+          "Label": "type",
+          "Type": "varchar",
+          "Precision": 2147483647,
+          "Scale": 0,
+          "Nullable": "UNKNOWN",
+          "CaseSensitive": true
+        }
+      ]
+    }
+  },
+  "NextToken": "ASaO0/jvyzEFppFOI6IpnFnx8sNqHqGgNK9gHHHPKzX7JiUeTsRQyzRmT3MeKX5fiC3JuRjnXUXzQMnV3BNC7/ccIgYnffpZsQ==",
+  "ResponseMetadata": {
+    "RequestId": "61b2269b-c1b0-4490-bfd0-16be7c7781df",
+    "HTTPStatusCode": 200,
+    "HTTPHeaders": {
+      "content-type": "application/x-amz-json-1.1",
+      "date": "Tue, 05 Apr 2022 15:29:06 GMT",
+      "x-amzn-requestid": "61b2269b-c1b0-4490-bfd0-16be7c7781df",
+      "content-length": "2369",
+      "connection": "keep-alive"
+    },
+    "RetryAttempts": 0
+  }
+}

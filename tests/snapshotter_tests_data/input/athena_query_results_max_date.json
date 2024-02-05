@@ -1,0 +1,50 @@
+{
+  "UpdateCount": 0,
+  "ResultSet": {
+    "Rows": [
+      {
+        "Data": [
+          {
+            "VarCharValue": "max_pdate"
+          }
+        ]
+      },
+      {
+        "Data": [
+          {
+            "VarCharValue": "{today_iso}"
+          }
+        ]
+      }
+    ],
+    "ResultSetMetadata": {
+      "ColumnInfo": [
+        {
+          "CatalogName": "hive",
+          "SchemaName": "",
+          "TableName": "",
+          "Name": "max_pdate",
+          "Label": "max_pdate",
+          "Type": "date",
+          "Precision": 0,
+          "Scale": 0,
+          "Nullable": "UNKNOWN",
+          "CaseSensitive": false
+        }
+      ]
+    }
+  },
+  "NextToken": "ARSLkFzJyP0GE7Wzp4gaTmoflhtIeGqGl+SQHH6/n7zCOWokafzf4Ou3CTsPS5ItafaxnMZ14XH5zv0naEYDd/oKFI9W8KTLLQ==",
+  "ResponseMetadata": {
+    "RequestId": "08480217-ba2c-460b-b112-781a04faee49",
+    "HTTPStatusCode": 200,
+    "HTTPHeaders": {
+      "date": "Fri, 07 Apr 2023 07:56:29 GMT",
+      "content-type": "application/x-amz-json-1.1",
+      "content-length": "699",
+      "connection": "keep-alive",
+      "x-amzn-requestid": "08480217-ba2c-460b-b112-781a04faee49"
+    },
+    "RetryAttempts": 0
+  }
+}

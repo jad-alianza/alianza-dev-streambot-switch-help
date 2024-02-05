@@ -1,0 +1,5 @@
+entityRoster:
+  fooBar:
+    sns:
+      awsAccount: 123456789012
+      topicArn: 'fooBar-Prod-topicArn'
